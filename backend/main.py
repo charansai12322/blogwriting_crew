@@ -24,16 +24,26 @@ from pathlib import Path
 from pydantic import BaseModel, Field
 from dotenv import load_dotenv
 
+# Ensure both repository root and backend directory are in sys.path
+_current_dir = Path(__file__).resolve().parent
+_repo_root = _current_dir.parent
+for _p in [str(_repo_root), str(_current_dir)]:
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
+
 # Load local environment variables from backend/.env or repo root .env
-_backend_env = Path(__file__).resolve().parent / ".env"
-_root_env = Path(__file__).resolve().parent.parent / ".env"
+_backend_env = _current_dir / ".env"
+_root_env = _repo_root / ".env"
 if _backend_env.exists():
     load_dotenv(dotenv_path=_backend_env)
 if _root_env.exists():
     load_dotenv(dotenv_path=_root_env)
 load_dotenv()
 
-from backend.agent import run_blog_crew, get_model_name
+try:
+    from backend.agent import run_blog_crew, get_model_name
+except (ImportError, ModuleNotFoundError):
+    from agent import run_blog_crew, get_model_name
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
